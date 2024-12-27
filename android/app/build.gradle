@@ -1,0 +1,76 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
+}
+
+android {
+    namespace = "com.example.flutter_apps" // Specify your package name here
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    defaultConfig {
+        applicationId = "com.example.flutter_apps" // Ensure this matches your namespace
+        // Updated minSdkVersion to 23 for compatibility with Firebase
+        minSdk = 23
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        multiDexEnabled = true // Enables multidex support for large projects
+    }
+
+    buildTypes {
+        debug {
+            signingConfig = signingConfigs.debug
+        }
+        release {
+            // Set up release signing if required
+            signingConfig = signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // Include additional build configurations for Firebase or other services
+    buildFeatures {
+        viewBinding true // Enables view binding
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    // Firebase platform dependencies with a BOM for version alignment
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
+    implementation 'com.google.firebase:firebase-analytics'
+
+    // Additional Firebase libraries can be added here as needed:
+    // implementation 'com.google.firebase:firebase-auth'
+    // implementation 'com.google.firebase:firebase-database'
+
+    // Kotlin and AndroidX dependencies
+    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
+
+    // Multidex support
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation project(':location')
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+}
+
+apply plugin: 'com.google.gms.google-services'

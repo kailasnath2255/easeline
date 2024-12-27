@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "44297401055",
+    "project_id": "easeline-1fba9",
+    "storage_bucket": "easeline-1fba9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44297401055:android:ca84b1826216becb65af6a",
+        "android_client_info": {
+          "package_name": "com.example.flutter_apps"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANB1s25k8lAdsBnOiw7pQIuBPZU_MG7ZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

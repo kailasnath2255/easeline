@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace = "com.example.flutter_apps.location" // Ensure this matches the package name of your module
+    compileSdk 33 // Use the appropriate compileSdk version for your project
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    // Ensure that Kotlin and Java compatibility is set to the same JVM target (optional, but recommended)
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17" // Ensure that Kotlin uses Java 17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+    implementation 'com.google.firebase:firebase-firestore:24.3.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
+}
