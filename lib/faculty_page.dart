@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'login_page.dart';
 import 'student_grevances.dart'; // Correct import for the grievances page
+import 'announcement_display.dart'; // Import the page for viewing announcements
 
 class FacultyPage extends StatefulWidget {
   @override
@@ -14,6 +17,10 @@ class _FacultyPageState extends State<FacultyPage> {
   Map<String, dynamic>? facultyInfo;
   bool isLoading = true;
 
+  // Notification variables
+  late FirebaseMessaging _firebaseMessaging;
+  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
   @override
   void initState() {
     super.initState();
@@ -21,7 +28,60 @@ class _FacultyPageState extends State<FacultyPage> {
         .collection('emergency')
         .orderBy('timestamp', descending: true)
         .snapshots();
+
     fetchFacultyInfo();
+    initializeNotifications();
+  }
+
+  // Initialize Firebase Cloud Messaging and local notifications
+  void initializeNotifications() {
+    _firebaseMessaging = FirebaseMessaging.instance;
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    // Request notification permission for iOS
+    _firebaseMessaging.requestPermission();
+
+    // Initialize local notifications
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('app_icon');
+    const InitializationSettings initializationSettings =
+    InitializationSettings(android: initializationSettingsAndroid);
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    // Listen for foreground notifications
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        showNotification(message.notification!);
+      }
+    });
+
+    // Handle background and terminated state notifications
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle notification tapped logic here
+    });
+  }
+
+  // Show local notification when an emergency is received
+  Future<void> showNotification(RemoteNotification notification) async {
+    const AndroidNotificationDetails androidNotificationDetails =
+    AndroidNotificationDetails(
+      'emergency_channel',
+      'Emergency Notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails notificationDetails =
+    NotificationDetails(android: androidNotificationDetails);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      notification.title,
+      notification.body,
+      notificationDetails,
+      payload: 'emergency_payload',
+    );
   }
 
   Future<void> fetchFacultyInfo() async {
@@ -71,6 +131,15 @@ class _FacultyPageState extends State<FacultyPage> {
       context,
       MaterialPageRoute(
         builder: (context) => StudentGrievancesPage(facultyName: facultyName), // Passing faculty name
+      ),
+    );
+  }
+
+  void navigateToViewAnnouncements() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnnouncementListPage(), // Navigate to Announcement Display Page
       ),
     );
   }
@@ -127,6 +196,12 @@ class _FacultyPageState extends State<FacultyPage> {
             ),
             Divider(),
             ListTile(
+              leading: Icon(Icons.view_list),
+              title: Text('View Announcements'),
+              onTap: navigateToViewAnnouncements, // Redirect to view announcements page
+            ),
+            Divider(),
+            ListTile(
               leading: Icon(Icons.logout),
               title: Text('Logout'),
               onTap: logoutUser,
@@ -141,14 +216,23 @@ class _FacultyPageState extends State<FacultyPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Faculty Information",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: AssetImage('assets/images/kns.jpeg'), // Profile picture
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 20),
+            Text(
+              facultyInfo?['name'] ?? 'Faculty Name',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
+              ),
+            ),
+            SizedBox(height: 20),
             Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(15.0),
               ),
               elevation: 5,
               child: Padding(
@@ -156,7 +240,6 @@ class _FacultyPageState extends State<FacultyPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    buildDetailTile("Name", facultyInfo?['name'] ?? 'N/A', Icons.person),
                     buildDetailTile("Email", facultyInfo?['email'] ?? 'N/A', Icons.email),
                     buildDetailTile("Faculty ID", facultyInfo?['facultyid'] ?? 'N/A', Icons.badge),
                     buildDetailTile("Course", facultyInfo?['course'] ?? 'N/A', Icons.book),
@@ -198,6 +281,10 @@ class _FacultyPageState extends State<FacultyPage> {
                         return SizedBox.shrink();
                       }
 
+                      // Trigger notification when an emergency is received
+                      FirebaseMessaging.instance
+                          .subscribeToTopic("faculty_${facultyInfo?['facultyid']}");
+
                       return Card(
                         color: Colors.red[50],
                         margin: EdgeInsets.symmetric(vertical: 8.0),
@@ -222,13 +309,26 @@ class _FacultyPageState extends State<FacultyPage> {
   }
 
   Widget buildDetailTile(String title, String value, IconData icon) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(
-        title,
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Text(value),
+    return Row(
+      children: [
+        Icon(icon, color: Colors.blue),
+        SizedBox(width: 10),
+        Text(
+          "$title:",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(fontSize: 16),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

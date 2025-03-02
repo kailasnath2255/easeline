@@ -166,25 +166,49 @@ class _GrievanceSubmissionPageState extends State<GrievanceSubmissionPage> {
         }
       }
 
-      // Save grievance to Firestore
       User? currentUser = FirebaseAuth.instance.currentUser;
-      await FirebaseFirestore.instance.collection('grievances').add({
-        'studentId': currentUser?.uid,
-        'studentName': widget.studentName,
-        'studentRegNo': widget.studentRegNo,
-        'studentCourse': widget.studentCourse,
-        'studentSection': widget.studentSection,
-        'grievanceType': grievanceType,
-        'grievanceLevel': grievanceLevel,
-        'grievanceText': grievanceText,
-        'recipientType': selectedRecipientType,
-        'recipient': selectedRecipientType == 'Specific Faculty' ? selectedFaculty : selectedRecipientType,
-        'fileUrls': uploadedFileUrls,
-        'location': includeLocation && userLocation != null
-            ? {'latitude': userLocation!.latitude, 'longitude': userLocation!.longitude}
-            : null,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+
+      if (selectedRecipientType == 'All Faculties') {
+        // Send grievance to all faculties
+        for (String facultyName in facultyList) {
+          await FirebaseFirestore.instance.collection('grievances').add({
+            'studentId': currentUser?.uid,
+            'studentName': widget.studentName,
+            'studentRegNo': widget.studentRegNo,
+            'studentCourse': widget.studentCourse,
+            'studentSection': widget.studentSection,
+            'grievanceType': grievanceType,
+            'grievanceLevel': grievanceLevel,
+            'grievanceText': grievanceText,
+            'recipientType': 'Faculty',
+            'recipient': facultyName,
+            'fileUrls': uploadedFileUrls,
+            'location': includeLocation && userLocation != null
+                ? {'latitude': userLocation!.latitude, 'longitude': userLocation!.longitude}
+                : null,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+      } else {
+        // Send grievance to specific recipient type
+        await FirebaseFirestore.instance.collection('grievances').add({
+          'studentId': currentUser?.uid,
+          'studentName': widget.studentName,
+          'studentRegNo': widget.studentRegNo,
+          'studentCourse': widget.studentCourse,
+          'studentSection': widget.studentSection,
+          'grievanceType': grievanceType,
+          'grievanceLevel': grievanceLevel,
+          'grievanceText': grievanceText,
+          'recipientType': selectedRecipientType,
+          'recipient': selectedRecipientType == 'Specific Faculty' ? selectedFaculty : selectedRecipientType,
+          'fileUrls': uploadedFileUrls,
+          'location': includeLocation && userLocation != null
+              ? {'latitude': userLocation!.latitude, 'longitude': userLocation!.longitude}
+              : null,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Grievance submitted successfully!"),
@@ -215,7 +239,7 @@ class _GrievanceSubmissionPageState extends State<GrievanceSubmissionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.white70,
         title: Text("Grievance Submission"),
       ),
       body: Padding(
@@ -225,6 +249,7 @@ class _GrievanceSubmissionPageState extends State<GrievanceSubmissionPage> {
             // Student Info
             Card(
               elevation: 5,
+              color: Colors.blueAccent[50],
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -263,6 +288,15 @@ class _GrievanceSubmissionPageState extends State<GrievanceSubmissionPage> {
             Wrap(
               spacing: 8,
               children: ['Moderate', 'Serious', 'Urgent'].map((level) {
+                Color chipColor;
+                if (level == 'Moderate') {
+                  chipColor = Colors.yellow;
+                } else if (level == 'Serious') {
+                  chipColor = Colors.orange;
+                } else {
+                  chipColor = Colors.red;
+                }
+
                 return ChoiceChip(
                   label: Text(level),
                   selected: grievanceLevel == level,
@@ -271,6 +305,8 @@ class _GrievanceSubmissionPageState extends State<GrievanceSubmissionPage> {
                       grievanceLevel = level;
                     });
                   },
+                  selectedColor: chipColor,
+                  backgroundColor: Colors.grey[300],
                 );
               }).toList(),
             ),

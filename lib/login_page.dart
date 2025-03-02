@@ -291,7 +291,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     SizedBox(height: 8.0),
                     // Copyright Notice
                     Text(
-                      "© 2024 EaseLine. All rights reserved.",
+                      "© 2025 EaseLine. All rights reserved.",
                       style: TextStyle(
                         fontSize: 12.0,
                         color: Colors.white70,
