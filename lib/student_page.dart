@@ -9,6 +9,7 @@ import 'student_profile.dart';
 import 'ai_chat_bot_page.dart';
 import 'aboutuspage.dart';
 import 'contact.dart';
+import 'package:flutter_apps/AttendanceHoldOnRequestPage.dart';
 
 class StudentPage extends StatefulWidget {
   @override
@@ -57,6 +58,7 @@ class _StudentPageState extends State<StudentPage> {
       });
     }
   }
+
 
   void showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
@@ -256,6 +258,14 @@ class _StudentPageState extends State<StudentPage> {
               leading: Icon(Icons.history),
               title: Text('Grievance Logs'),
               onTap: () => _onItemTapped(3),
+            ),
+            ListTile(
+              leading: Icon(Icons.info_outline),
+              title: Text('Attendance Hold On'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AttendanceRequestPage()),
+              ),
             ),
 
             ListTile(

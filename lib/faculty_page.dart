@@ -5,7 +5,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'login_page.dart';
 import 'student_grevances.dart'; // Correct import for the grievances page
-import 'announcement_display.dart'; // Import the page for viewing announcements
+import 'announcement_display.dart';
+import 'ai_chat_bot_page.dart';
+import 'aboutuspage.dart';
+import 'contact.dart';
+import 'facultyattendencereq.dart';
+// Import the page for viewing announcements
 
 class FacultyPage extends StatefulWidget {
   @override
@@ -20,6 +25,8 @@ class _FacultyPageState extends State<FacultyPage> {
   // Notification variables
   late FirebaseMessaging _firebaseMessaging;
   late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+  int _selectedIndex = 0; // Track selected index for BottomNavigationBar
 
   @override
   void initState() {
@@ -148,6 +155,29 @@ class _FacultyPageState extends State<FacultyPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  void onTabTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        navigateToStudentGrevances();
+        break;
+      case 1:
+        navigateToViewAnnouncements();
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FacultyAttendanceRequestsPage(), // Attendance Request Page
+          ),
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,6 +229,33 @@ class _FacultyPageState extends State<FacultyPage> {
               leading: Icon(Icons.view_list),
               title: Text('View Announcements'),
               onTap: navigateToViewAnnouncements, // Redirect to view announcements page
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.info_outline),
+              title: Text('Attendance Request'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FacultyAttendanceRequestsPage()),
+              ),
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.info_outline),
+              title: Text('About Us'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutUsPage()),
+              ),
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.help_outline),
+              title: Text('Contact & Support'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ContactUsPage()),
+              ),
             ),
             Divider(),
             ListTile(
@@ -304,6 +361,24 @@ class _FacultyPageState extends State<FacultyPage> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: onTabTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Student Grievances',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.view_list),
+            label: 'View Announcements',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info_outline),
+            label: 'Attendance Request',
+          ),
+        ],
       ),
     );
   }
